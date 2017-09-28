@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <base target="_top">
+    </head>
+    <body>
+        Choose from the Options bellow: <br />
+        <br />
+        Add ID: Adds inventory ID to master list
+        <input type="button" value="Add  ID"
+            onclick="addID" /><br /> 
+        Remove ID: Remove inventory ID from master list
+        <input type="button" value="Remove ID"
+            onclick="google.script.host.close()" /><br />
+        Run Rebuild: Rebuilds Inventory Counter From Scratch
+        <input type="button" value="Rebuild Inventory Counter"
+            onclick="google.script.host.close()" /><br /> 
+        Add to Inventory List:Adds to Inventory List <br />
+        <input type="button" value="Run Add Inventory Item"
+            onclick="google.script.host.close()" /><br /> 
+        Remove from Inventory List: Frees Location in List <br />
+        <input type="button" value="Remove Inventory item"
+            onclick="google.script.host.close()" /><br /> 
+        Find Item: Finds Item in Inventory gives location <br />
+        <input type="button" value="Run Find Item"
+            onclick="google.script.host.close()" /><br /> 
+        <input type="button" value="Close"
+            onclick="google.script.host.close()" /><br /> 
+        <script>
+            var app=SpreadsheetApp;
+            var Engine=app.getActiveSpreadsheet().getSheetByName("Engine");
+            var Target=app.getActiveSpreadsheet().getSheetByName("Inventory List");
+            var Result=app.getActiveSpreadsheet().getSheetByName("Inventory Counter");
+            
+            //program will check engine list and find and sum all items of the same number
+            function CreateList(){
+            
+            
+                Target.getRange(4, 3,(Target.getLastRow()-4),8).sort([{column: 3, ascending: true}]);
+                        //list sorted
+                var Compare = Target.getRange(4, 3,Target.getLastRow(), 5).getValues();
+                var ID  = Engine.getRange(1, 1, Engine.getLastRow(), 2).getValues();
+                var IDlength=ID.length;
+                ID.sort(function(a, b){return a - b});
+                for(var i=0;i<IDlength;i++){
+                    ID[i][1] = 0;
+                    Compare.sort(function(a, b){return a - b});
+                    while((index=BinarySearch(ID[i][0],Compare))!=-1){
+                        ID[i][1]+=Number(parseInt((Compare[index][2]/1),10));
+                        Compare=deleteRow(Compare,index);
+                    }
+                }
+                //compare[][], ID[][]
+                //compare[row][0]=id
+                //compare[row][2]=number of item
+                //id[row][0]
+                //printing
+                Result.getRange(2, 1, IDlength,2).setValues(ID);
+                Target.getRange(4, 3,Target.getLastRow()-4 ,8).sort([{column: 6, ascending: true}]);
+                //list reset sorted
+            }
+            //Performs Binary Search algorithm
+            function BinarySearch(key,Compare){
+                if(Compare.length==0){
+                    return -1;
+                } else {
+                    var high = Compare.length-1;
+                }
+                var low = 0;
+                var mid;
+                
+                while((Compare[high][0] != Compare[low][0]) && (key >= Compare[low][0]) && (key <= Compare[high][0]))
+                {
+                    mid = (low + high) / 2;
+                    mid=Number((mid).toFixed(0));
+                    if(Compare[mid][0] < key ){
+                        low = mid + 1;
+                    } else if(key <Compare[mid][0]){
+                        high = mid - 1;
+                    } else { 
+                        return mid
+                    }
+                }
+                
+                if(key == Compare[low][0]){
+                    return low;
+                } else if(key ==Compare[high][0]){
+                    return high;
+                } else{
+                    return -1;
+                }
+            }
+            //Deletes Row in array and sorts
+            function deleteRow(arr, index) {
+                if (index > -1) {
+                    arr.splice(index, 1);
+                }
+                arr.sort(function(a, b){return a - b});
+                return arr;
+            }
+            //Adds ID to Master List
+            function addID(){
+                CreateList();
+                //Engine.getRange(Engine.getLastRow(),1).setValue(data);
+            }
+        </script>
+    </body>
+</html>
